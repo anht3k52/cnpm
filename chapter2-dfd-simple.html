@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHƯƠNG 2 — Phân rã chức năng & DFD (đơn giản)</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', theme: 'default' });
+  </script>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:20px;color:#111}
+    h1,h2{margin:18px 0}
+    .mermaid{margin:12px 0;border:1px solid #ddd;border-radius:8px;padding:6px}
+    .tip{font-style:italic;color:#444}
+  </style>
+</head>
+<body>
+  <h1>CHƯƠNG 2 — Biểu đồ đơn giản (1 khung hình dễ chụp)</h1>
+  <p class="tip">Đề tài: Website bán điện thoại di động cũ. Các biểu đồ được giản lược để gói gọn trong một khung.</p>
+
+  <h2>2.x Phân rã chức năng (Functional Decomposition)</h2>
+  <div class="mermaid">
+  mindmap
+    root((Website bán điện thoại cũ))
+      Người dùng
+        Tìm kiếm & Lọc
+        Xem chi tiết
+        Giỏ hàng → Đặt hàng → Thanh toán
+        Theo dõi đơn
+      Quản trị
+        Sản phẩm (Thêm/Sửa/Xóa)
+        Đơn hàng
+        Danh mục/Thương hiệu
+      Tích hợp
+        VNPay
+        Email/SMS
+  </div>
+
+  <h2>DFD Mức 0 (Khung cảnh)</h2>
+  <div class="mermaid">
+  flowchart LR
+    classDef p fill:#e7f0ff,stroke:#4e87da,rx:6,ry:6
+    classDef e fill:#fff2cc,stroke:#c49200,rx:6,ry:6
+    classDef d fill:#ecfdf5,stroke:#059669,rx:4,ry:4
+
+    C((Khách hàng)):::e
+    A((Admin)):::e
+    V[[VNPay]]:::e
+
+    subgraph S[Website bán điện thoại cũ]
+      P0((Bán hàng trực tuyến)):::p
+      D1[(Người dùng)]:::d
+      D2[(Sản phẩm)]:::d
+      D3[(Đơn hàng/Thanh toán)]:::d
+    end
+
+    C -->|duyệt, đặt hàng| P0
+    P0 -->|trang/kết quả| C
+    A -->|quản trị| P0
+    P0 -->|báo cáo| A
+    P0 --- V
+    P0 --- D1
+    P0 --- D2
+    P0 --- D3
+  </div>
+
+  <h2>DFD Mức 1 (Đỉnh)</h2>
+  <div class="mermaid">
+  flowchart TB
+    classDef p fill:#e7f0ff,stroke:#4e87da,rx:6,ry:6
+    classDef e fill:#fff2cc,stroke:#c49200,rx:6,ry:6
+    classDef d fill:#ecfdf5,stroke:#059669,rx:4,ry:4
+
+    U((Khách hàng)):::e
+    AD((Admin)):::e
+    V[[VNPay]]:::e
+
+    DUser[(D1 Người dùng)]:::d
+    DProd[(D2 Sản phẩm)]:::d
+    DOrder[(D3 Đơn hàng)]:::d
+    DPay[(D4 Thanh toán)]:::d
+
+    P1((P1 Tìm kiếm/SP)):::p
+    P2((P2 Giỏ hàng & Checkout)):::p
+    P3((P3 Thanh toán VNPay)):::p
+    P4((P4 Quản trị SP)):::p
+
+    U --> P1
+    P1 --- DProd
+    P1 --> U
+
+    U --> P2
+    P2 --- DOrder
+    P2 --> P3
+
+    P3 --- V
+    P3 --- DPay
+    P3 --> DOrder
+
+    AD --> P4
+    P4 --- DProd
+    
+  </div>
+
+  <h2>DFD Mức 2 (Chi tiết Thanh toán VNPay)</h2>
+  <div class="mermaid">
+  flowchart TB
+    classDef p fill:#e7f0ff,stroke:#4e87da,rx:6,ry:6
+    classDef e fill:#fff2cc,stroke:#c49200,rx:6,ry:6
+    classDef d fill:#ecfdf5,stroke:#059669,rx:4,ry:4
+
+    U((Khách hàng)):::e
+    V[[VNPay]]:::e
+    DOrder[(Đơn hàng)]:::d
+    DPay[(Thanh toán)]:::d
+
+    P3_1((Tạo đơn tạm)):::p
+    P3_2((Sinh yêu cầu & ký)):::p
+    P3_3((Xác minh callback)):::p
+    P3_4((Cập nhật đơn/ghi nhận)):::p
+
+    U --> P3_1 --> DOrder
+    P3_1 --> P3_2 --> V
+    V --> P3_3 --> P3_4
+    P3_4 --> DPay
+    P3_4 --> DOrder
+  </div>
+
+  <p class="tip">Tất cả biểu đồ được tối giản để vừa một màn hình, thuận tiện chụp ảnh.</p>
+</body>
+</html>
