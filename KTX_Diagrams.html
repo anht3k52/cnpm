@@ -16,7 +16,26 @@
   </style>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: { fontSize: '12px', lineHeight: '16px' }
+    });
+
+    // Auto-scale ERD to fit a single screen width via query param ?erdscale=0.7 (default 0.75)
+    const params = new URLSearchParams(location.search);
+    const scale = parseFloat(params.get('erdscale') || '0.75');
+    window.addEventListener('DOMContentLoaded', () => {
+      const erd = document.getElementById('erdContainer');
+      if (erd && !Number.isNaN(scale)) erd.style.setProperty('--scale', String(scale));
+      // toolbar buttons
+      document.querySelectorAll('[data-erd-scale]')?.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const v = parseFloat(btn.getAttribute('data-erd-scale'));
+          if (!Number.isNaN(v) && erd) erd.style.setProperty('--scale', String(v));
+        });
+      });
+    });
   </script>
   <meta name="color-scheme" content="light" />
   <meta http-equiv="Cache-Control" content="no-store" />
@@ -34,6 +53,7 @@
   <h2>Use Case (Tổng quan)</h2>
   <pre class="mermaid">
 flowchart LR
+  %% Actors
   SV["Sinh viên"]:::actor
   CB["Cán bộ KTX"]:::actor
   KT["Kế toán"]:::actor
@@ -41,20 +61,25 @@ flowchart LR
   BV["Bảo vệ"]:::actor
   QT["Quản trị"]:::actor
 
-  UC_Login([Đăng nhập])
-  UC_Apply([Nộp hồ sơ])
-  UC_Approve([Xét duyệt])
-  UC_Assign([Phân phòng/giường])
-  UC_Contract([Hợp đồng])
-  UC_Meter([Ghi chỉ số])
-  UC_Invoice([Tính phí &amp; Hóa đơn])
-  UC_Payment([Thanh toán])
-  UC_Maint([Phiếu bảo trì])
-  UC_Violation([Vi phạm])
-  UC_Visitor([Khách/Ra vào])
-  UC_Report([Báo cáo])
-  UC_Admin([Quản trị])
+  %% Use cases arranged horizontally
+  subgraph UC[Use Cases]
+  direction LR
+    UC_Login([Đăng nhập])
+    UC_Apply([Nộp hồ sơ])
+    UC_Approve([Xét duyệt])
+    UC_Assign([Phân phòng/giường])
+    UC_Contract([Hợp đồng])
+    UC_Meter([Ghi chỉ số])
+    UC_Invoice([Tính phí &amp; Hóa đơn])
+    UC_Payment([Thanh toán])
+    UC_Maint([Phiếu bảo trì])
+    UC_Violation([Vi phạm])
+    UC_Visitor([Khách/Ra vào])
+    UC_Report([Báo cáo])
+    UC_Admin([Quản trị])
+  end
 
+  %% Links
   SV --> UC_Login
   SV --> UC_Apply
   SV --> UC_Payment
@@ -81,6 +106,160 @@ flowchart LR
   QT --> UC_Login
   QT --> UC_Admin
   QT --> UC_Report
+
+  classDef actor fill:#fff,stroke:#333
+  </pre>
+
+  <h2>Use Case – Tiếp nhận &amp; xét duyệt (hàng ngang)</h2>
+  <pre class="mermaid">
+flowchart LR
+  SV["Sinh viên"]:::actor
+  CB["Cán bộ KTX"]:::actor
+
+  subgraph UC[Tiếp nhận & xét duyệt]
+  direction LR
+    UC_Apply([Nộp hồ sơ])
+    UC_Validate([Kiểm tra điều kiện])
+    UC_Priority([Xếp hạng ưu tiên])
+    UC_Approve([Phê duyệt])
+    UC_Contract([Ký hợp đồng])
+    UC_Checkin([Check-in])
+  end
+
+  SV --> UC_Apply
+  CB --> UC_Validate
+  CB --> UC_Priority
+  CB --> UC_Approve
+  CB --> UC_Contract
+  CB --> UC_Checkin
+
+  classDef actor fill:#fff,stroke:#333
+  </pre>
+
+  <h2>Use Case – Phòng/giường (hàng ngang)</h2>
+  <pre class="mermaid">
+flowchart LR
+  CB["Cán bộ KTX"]:::actor
+
+  subgraph UC[Phòng/giường]
+  direction LR
+    UC_Building([Quản lý khu/nhà])
+    UC_RoomType([Quản lý loại phòng])
+    UC_Room([Quản lý phòng])
+    UC_Bed([Quản lý giường])
+    UC_Assign([Phân phòng])
+    UC_Change([Đổi phòng])
+    UC_Checkout([Trả phòng/Tạm vắng])
+  end
+
+  CB --> UC_Building
+  CB --> UC_RoomType
+  CB --> UC_Room
+  CB --> UC_Bed
+  CB --> UC_Assign
+  CB --> UC_Change
+  CB --> UC_Checkout
+
+  classDef actor fill:#fff,stroke:#333
+  </pre>
+
+  <h2>Use Case – Phí &amp; thanh toán (hàng ngang)</h2>
+  <pre class="mermaid">
+flowchart LR
+  CB["Cán bộ KTX"]:::actor
+  KT["Kế toán"]:::actor
+  SV["Sinh viên"]:::actor
+
+  subgraph UC[Phí & thanh toán]
+  direction LR
+    UC_FeeCfg([Định phí phòng/dịch vụ])
+    UC_Meter([Ghi chỉ số])
+    UC_Charge([Tính phí tiêu thụ])
+    UC_Invoice([Lập hóa đơn])
+    UC_Pay([Ghi nhận thanh toán])
+    UC_Ar([Công nợ/Đối soát])
+  end
+
+  CB --> UC_FeeCfg
+  CB --> UC_Meter
+  CB --> UC_Charge
+  KT --> UC_Invoice
+  KT --> UC_Pay
+  KT --> UC_Ar
+  SV --> UC_Pay
+
+  classDef actor fill:#fff,stroke:#333
+  </pre>
+
+  <h2>Use Case – Tài sản &amp; bảo trì (hàng ngang)</h2>
+  <pre class="mermaid">
+flowchart LR
+  CB["Cán bộ KTX"]:::actor
+  BT["Bảo trì"]:::actor
+
+  subgraph UC[Tài sản & bảo trì]
+  direction LR
+    UC_AssetInv([Kiểm kê tài sản])
+    UC_AssetAlloc([Phân bổ tài sản])
+    UC_TicketCreate([Tạo phiếu bảo trì])
+    UC_TicketAssign([Phân công])
+    UC_TicketDone([Nghiệm thu & chi phí])
+  end
+
+  CB --> UC_AssetInv
+  CB --> UC_AssetAlloc
+  CB --> UC_TicketCreate
+  BT --> UC_TicketAssign
+  BT --> UC_TicketDone
+
+  classDef actor fill:#fff,stroke:#333
+  </pre>
+
+  <h2>Use Case – An ninh &amp; ra/vào (hàng ngang)</h2>
+  <pre class="mermaid">
+flowchart LR
+  BV["Bảo vệ"]:::actor
+  CB["Cán bộ KTX"]:::actor
+
+  subgraph UC[An ninh & ra/vào]
+  direction LR
+    UC_Gate([Sổ ra/vào])
+    UC_Visitor([Khách thăm])
+    UC_Violation([Biên bản vi phạm])
+    UC_Penalty([Xử lý/Thu phạt])
+  end
+
+  BV --> UC_Gate
+  BV --> UC_Visitor
+  CB --> UC_Violation
+  CB --> UC_Penalty
+
+  classDef actor fill:#fff,stroke:#333
+  </pre>
+
+  <h2>Use Case – Quản trị &amp; báo cáo (hàng ngang)</h2>
+  <pre class="mermaid">
+flowchart LR
+  QT["Quản trị"]:::actor
+  CB["Cán bộ KTX"]:::actor
+  KT["Kế toán"]:::actor
+
+  subgraph UC[Quản trị & báo cáo]
+  direction LR
+    UC_User([Người dùng])
+    UC_Role([Vai trò & Phân quyền])
+    UC_Config([Cấu hình])
+    UC_Audit([Audit log])
+    UC_Report([Báo cáo/Export])
+  end
+
+  QT --> UC_User
+  QT --> UC_Role
+  QT --> UC_Config
+  QT --> UC_Audit
+  QT --> UC_Report
+  CB --> UC_Report
+  KT --> UC_Report
 
   classDef actor fill:#fff,stroke:#333
   </pre>
@@ -139,6 +318,69 @@ flowchart TB
   A --- F6
 
   classDef root fill:#fff,stroke:#333,stroke-width:2px
+  </pre>
+
+  <h2>Phân rã chức năng – Level 2 (chi tiết)</h2>
+  <pre class="mermaid">
+flowchart TB
+  A[Quản lý Ký túc xá]
+
+  subgraph F1[1. Tiếp nhận & xét duyệt]
+    F1_1[Nộp hồ sơ]
+    F1_2[Kiểm tra điều kiện]
+    F1_3[Xếp hạng ưu tiên]
+    F1_4[Duyệt/Không duyệt]
+    F1_5[Ký hợp đồng]
+    F1_6[Check-in]
+  end
+
+  subgraph F2[2. Phòng/giường]
+    F2_1[Danh mục khu/nhà]
+    F2_2[Loại phòng]
+    F2_3[Phòng]
+    F2_4[Giường]
+    F2_5[Phân phòng]
+    F2_6[Đổi phòng]
+    F2_7[Trả phòng/Tạm vắng]
+  end
+
+  subgraph F3[3. Phí & thanh toán]
+    F3_1[Định phí phòng/dịch vụ]
+    F3_2[Nhập chỉ số điện/nước]
+    F3_3[Tính phí tiêu thụ]
+    F3_4[Lập hóa đơn kỳ]
+    F3_5[Thu tiền/Đối soát]
+    F3_6[Quản lý công nợ]
+  end
+
+  subgraph F4[4. Tài sản & bảo trì]
+    F4_1[Kiểm kê tài sản]
+    F4_2[Phân bổ tài sản phòng]
+    F4_3[Tiếp nhận phiếu bảo trì]
+    F4_4[Phân công & xử lý]
+    F4_5[Nghiệm thu & chi phí]
+  end
+
+  subgraph F5[5. An ninh]
+    F5_1[Sổ ra/vào]
+    F5_2[Khách thăm]
+    F5_3[Lập biên bản vi phạm]
+    F5_4[Xử lý/Thu tiền phạt]
+  end
+
+  subgraph F6[6. Quản trị & báo cáo]
+    F6_1[Người dùng]
+    F6_2[Vai trò & Phân quyền]
+    F6_3[Cấu hình & Audit]
+    F6_4[Báo cáo/Thống kê/Export]
+  end
+
+  A --- F1
+  A --- F2
+  A --- F3
+  A --- F4
+  A --- F5
+  A --- F6
   </pre>
 
   <h2>DFD – Mức 0 (Khung cảnh)</h2>
@@ -308,6 +550,34 @@ sequenceDiagram
   UI-->>SV: Biên lai/Thông báo
   </pre>
 
+  <pre class="mermaid">
+sequenceDiagram
+  actor BT as Kỹ thuật/Bảo trì
+  participant UI as Form Bảo trì
+  participant DB as CSDL
+  participant CB as Cán bộ KTX
+  CB->>UI: Tạo phiếu bảo trì (phòng, hạng mục)
+  UI->>DB: Lưu phiếu trạng thái Open
+  DB-->>UI: ID phiếu
+  BT->>UI: Nhận &amp; cập nhật trạng thái Assigned
+  UI->>DB: Cập nhật tiến độ/chi phí
+  BT->>UI: Hoàn thành &amp; Nghiệm thu
+  UI->>DB: Đóng phiếu (Done)
+  </pre>
+
+  <pre class="mermaid">
+sequenceDiagram
+  actor CB as Cán bộ KTX
+  participant UI as Form Vi phạm
+  participant DB as CSDL
+  CB->>UI: Lập biên bản vi phạm
+  UI->>DB: Lưu vi phạm (Open)
+  CB->>UI: Quyết định xử phạt
+  UI->>DB: Ghi tiền phạt &amp; cập nhật hóa đơn/phiếu thu
+  DB-->>UI: OK
+  UI-->>CB: Đóng vi phạm (Closed)
+  </pre>
+
   <h2>Sơ đồ hoạt động (Activity)</h2>
   <pre class="mermaid">
 flowchart TD
@@ -332,7 +602,36 @@ flowchart TD
   G --> H[Thu tiền/Đối soát]
   </pre>
 
+  <pre class="mermaid">
+flowchart TD
+  A[Đề nghị đổi phòng] --> B{Có phòng phù hợp?}
+  B -- Không --> C[Thông báo từ chối]
+  B -- Có --> D[Giải phóng giường cũ]
+  D --> E[Cập nhật hợp đồng]
+  E --> F[Cập nhật giường mới]
+  F --> G[Hoàn tất đổi phòng]
+  </pre>
+
+  <pre class="mermaid">
+flowchart TD
+  A[Yêu cầu trả phòng] --> B[Đối soát công nợ]
+  B --> C[Kiểm kê tài sản]
+  C --> D[Chốt điện/nước]
+  D --> E[Hóa đơn kết thúc]
+  E --> F[Thu tiền/Hoàn cọc]
+  F --> G[Trả phòng &amp; đóng hợp đồng]
+  </pre>
+
   <h2>ERD (đã sửa cú pháp Mermaid)</h2>
+  <p class="note">Tip: đổi tỷ lệ bằng nút dưới hoặc thêm tham số URL, ví dụ: <code>?erdscale=0.6</code>.</p>
+  <div style="margin:8px 0">
+    <button data-erd-scale="0.5">50%</button>
+    <button data-erd-scale="0.6">60%</button>
+    <button data-erd-scale="0.7">70%</button>
+    <button data-erd-scale="0.8">80%</button>
+    <button data-erd-scale="1">100%</button>
+  </div>
+  <div id="erdContainer" class="erd-scale" style="--scale:0.75">
   <pre class="mermaid">
 erDiagram
   BUILDING {
@@ -521,6 +820,7 @@ erDiagram
   USER ||--o{ USER_ROLE : has
   ROLE ||--o{ USER_ROLE : grants
   </pre>
+  </div>
 
 </body>
 </html>
