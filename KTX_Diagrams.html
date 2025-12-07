@@ -53,60 +53,51 @@
   <h2>Use Case (Tổng quan)</h2>
   <pre class="mermaid">
 flowchart LR
-  %% Actors
-  SV["Sinh viên"]:::actor
-  CB["Cán bộ KTX"]:::actor
-  KT["Kế toán"]:::actor
-  BT["Bảo trì"]:::actor
-  BV["Bảo vệ"]:::actor
-  QT["Quản trị"]:::actor
+  %% Bố cục tổng quan theo module để giảm giao cắt
+  %% Actors bên trái/phải, module ở giữa
 
-  %% Use cases arranged horizontally
-  subgraph UC[Use Cases]
-  direction LR
-    UC_Login([Đăng nhập])
-    UC_Apply([Nộp hồ sơ])
-    UC_Approve([Xét duyệt])
-    UC_Assign([Phân phòng/giường])
-    UC_Contract([Hợp đồng])
-    UC_Meter([Ghi chỉ số])
-    UC_Invoice([Tính phí &amp; Hóa đơn])
-    UC_Payment([Thanh toán])
-    UC_Maint([Phiếu bảo trì])
-    UC_Violation([Vi phạm])
-    UC_Visitor([Khách/Ra vào])
-    UC_Report([Báo cáo])
-    UC_Admin([Quản trị])
+  subgraph LEFT[ ]
+  direction TB
+    SV["Sinh viên"]:::actor
+    CB["Cán bộ KTX"]:::actor
+    BV["Bảo vệ"]:::actor
   end
 
-  %% Links
-  SV --> UC_Login
-  SV --> UC_Apply
-  SV --> UC_Payment
+  subgraph RIGHT[ ]
+  direction TB
+    KT["Kế toán"]:::actor
+    BT["Bảo trì"]:::actor
+    QT["Quản trị"]:::actor
+  end
 
-  CB --> UC_Login
-  CB --> UC_Approve
-  CB --> UC_Assign
-  CB --> UC_Contract
-  CB --> UC_Meter
-  CB --> UC_Invoice
-  CB --> UC_Report
+  subgraph SYS[HỆ THỐNG QL KTX]
+  direction LR
+    M1([Tiếp nhận &amp; xét duyệt])
+    M2([Phòng/giường])
+    M3([Phí &amp; thanh toán])
+    M4([Tài sản &amp; bảo trì])
+    M5([An ninh &amp; ra/vào])
+    M6([Quản trị &amp; báo cáo])
+  end
 
-  KT --> UC_Login
-  KT --> UC_Invoice
-  KT --> UC_Payment
-  KT --> UC_Report
+  %% Liên kết mức module (chi tiết xem sơ đồ use case theo module bên dưới)
+  SV --> M1
+  SV --> M3
 
-  BT --> UC_Login
-  BT --> UC_Maint
+  CB --> M1
+  CB --> M2
+  CB --> M3
+  CB --> M5
 
-  BV --> UC_Login
-  BV --> UC_Visitor
+  KT --> M3
+  KT --> M6
 
-  QT --> UC_Login
-  QT --> UC_Admin
-  QT --> UC_Report
+  BT --> M4
+  BV --> M5
 
+  QT --> M6
+
+  %% Ghi chú: Đăng nhập áp dụng cho mọi tác nhân nên được lược bỏ ở tổng quan để tránh rối
   classDef actor fill:#fff,stroke:#333
   </pre>
 
